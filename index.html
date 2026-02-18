@@ -1,0 +1,835 @@
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Universal Calibration Certificate Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f88ff;
+            --primary-dark: #0a5fc7;
+            --secondary: #10b981;
+            --background: #0a0f1a;
+            --surface: #111827;
+            --surface-light: #1f2937;
+            --border: #374151;
+            --text: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent: #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #111827 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 30px;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        .form-container {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 35px 0 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        input, select, textarea {
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface-light);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 136, 255, 0.15);
+            background: var(--surface);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(15, 136, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 136, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        #certificate {
+            background: white;
+            color: #000;
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            display: none;
+            margin-top: 40px;
+        }
+
+        #certificate.show {
+            display: block;
+        }
+
+        .cert-header {
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+        }
+
+        .cert-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .cert-main-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f88ff;
+            margin: 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cert-subtitle {
+            color: #6b7280;
+            font-size: 15px;
+            margin: 10px 0;
+        }
+
+        .cert-section {
+            margin-bottom: 30px;
+        }
+
+        .cert-section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .cert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .cert-table td {
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+        }
+
+        .cert-table td:first-child {
+            font-weight: 600;
+            background: #f3f4f6;
+            width: 38%;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th {
+            background: #1f2937;
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .results-table td {
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+        }
+
+        .results-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .signature-block {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .signature-item {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 2px solid #000;
+            margin-bottom: 10px;
+            padding-top: 50px;
+        }
+
+        .traceability-note {
+            background: #f0f9ff;
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            margin: 25px 0;
+            font-size: 14px;
+            color: #1e40af;
+            line-height: 1.7;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .form-container, .btn-group, .header {
+                display: none !important;
+            }
+
+            #certificate {
+                box-shadow: none;
+                padding: 30px;
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            #certificate {
+                padding: 25px;
+            }
+
+            .cert-title {
+                font-size: 24px;
+            }
+
+            .cert-main-title {
+                font-size: 22px;
+            }
+        }
+
+        .status-pass {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .status-fail {
+            color: #ef4444;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class=\"container\">
+        <div class=\"header\">
+            <h1>🔧 Universal Calibration Certificate Generator</h1>
+            <p class=\"subtitle\">Professional-Grade Calibration Documentation for Industrial Instruments</p>
+        </div>
+
+        <div class=\"form-container\">
+            <form id=\"calibrationForm\">
+                <h2 class=\"section-title\">Instrument Information</h2>
+                
+                <div class=\"form-grid\">
+                    <div class=\"form-group\">
+                        <label for=\"instrumentCategory\">Instrument Category</label>
+                        <select id=\"instrumentCategory\" required>
+                            <option value=\"\">Select Category</option>
+                            <option value=\"Pressure\">Pressure (Transmitters, Gauges)</option>
+                            <option value=\"Flow\">Flow (Meters, Controllers)</option>
+                            <option value=\"Temperature\">Temperature (Thermocouples, RTDs, Thermometers)</option>
+                            <option value=\"Level\">Level (Sensors, Transmitters)</option>
+                            <option value=\"Analytical\">Analytical (pH, Conductivity, Gas Analyzers)</option>
+                        </select>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"brand\">Brand/Manufacturer</label>
+                        <select id=\"brand\" required>
+                            <option value=\"\">Select Brand</option>
+                            <option value=\"Fluke\">Fluke</option>
+                            <option value=\"Rosemount (Emerson)\">Rosemount (Emerson)</option>
+                            <option value=\"Yokogawa\">Yokogawa</option>
+                            <option value=\"Endress+Hauser\">Endress+Hauser</option>
+                            <option value=\"Honeywell\">Honeywell</option>
+                            <option value=\"Siemens\">Siemens</option>
+                            <option value=\"ABB\">ABB</option>
+                            <option value=\"WIKA\">WIKA</option>
+                            <option value=\"Ashcroft\">Ashcroft</option>
+                            <option value=\"Brooks Instrument\">Brooks Instrument</option>
+                            <option value=\"Omega Engineering\">Omega Engineering</option>
+                            <option value=\"Vaisala\">Vaisala</option>
+                            <option value=\"Testo\">Testo</option>
+                            <option value=\"Mettler Toledo\">Mettler Toledo</option>
+                            <option value=\"Hach\">Hach</option>
+                            <option value=\"Other\">Other</option>
+                        </select>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"model\">Model Number</label>
+                        <input type=\"text\" id=\"model\" required placeholder=\"e.g., 3051CD\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"serialNumber\">Serial Number</label>
+                        <input type=\"text\" id=\"serialNumber\" required placeholder=\"e.g., SN123456789\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"assetTag\">Asset/Tag Number</label>
+                        <input type=\"text\" id=\"assetTag\" placeholder=\"e.g., PT-101\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"location\">Location/Department</label>
+                        <input type=\"text\" id=\"location\" placeholder=\"e.g., Production Line A\">
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Calibration Details</h2>
+                
+                <div class=\"form-grid\">
+                    <div class=\"form-group\">
+                        <label for=\"calibrationDate\">Calibration Date</label>
+                        <input type=\"date\" id=\"calibrationDate\" required>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"nextDueDate\">Next Due Date</label>
+                        <input type=\"date\" id=\"nextDueDate\" required>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"procedure\">Procedure Number</label>
+                        <input type=\"text\" id=\"procedure\" placeholder=\"e.g., CAL-PR-001\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"environment\">Environmental Conditions</label>
+                        <input type=\"text\" id=\"environment\" placeholder=\"e.g., 22°C, 45% RH\">
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Standards & Traceability</h2>
+                
+                <div class=\"form-grid\">
+                    <div class=\"form-group\">
+                        <label for=\"standardUsed\">Standard Equipment Used</label>
+                        <input type=\"text\" id=\"standardUsed\" required placeholder=\"e.g., Fluke 754 Documenting Process Calibrator\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"standardSerial\">Standard Serial Number</label>
+                        <input type=\"text\" id=\"standardSerial\" required placeholder=\"e.g., STD-987654\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"standardCalDate\">Standard Cal. Date</label>
+                        <input type=\"date\" id=\"standardCalDate\" required>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"traceability\">Traceability</label>
+                        <select id=\"traceability\" required>
+                            <option value=\"NIST\">NIST (National Institute of Standards and Technology)</option>
+                            <option value=\"ISO/IEC 17025\">ISO/IEC 17025 Accredited Lab</option>
+                            <option value=\"UKAS\">UKAS (United Kingdom Accreditation Service)</option>
+                            <option value=\"A2LA\">A2LA (American Association for Laboratory Accreditation)</option>
+                            <option value=\"PTB\">PTB (Physikalisch-Technische Bundesanstalt)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Calibration Results</h2>
+                
+                <div class=\"form-grid\">
+                    <div class=\"form-group full-width\">
+                        <label for=\"measurementUnit\">Measurement Unit</label>
+                        <input type=\"text\" id=\"measurementUnit\" required placeholder=\"e.g., PSI, °C, mA, pH\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"range\">Measurement Range</label>
+                        <input type=\"text\" id=\"range\" required placeholder=\"e.g., 0-100\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"uncertainty\">Uncertainty (±)</label>
+                        <input type=\"text\" id=\"uncertainty\" required placeholder=\"e.g., ±0.05\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"accuracy\">Accuracy Class</label>
+                        <input type=\"text\" id=\"accuracy\" placeholder=\"e.g., ±0.1% FS\">
+                    </div>
+
+                    <div class=\"form-group full-width\">
+                        <label>Test Points (Enter comma-separated values)</label>
+                        <input type=\"text\" id=\"testPoints\" placeholder=\"e.g., 0, 25, 50, 75, 100\" required>
+                    </div>
+
+                    <div class=\"form-group full-width\">
+                        <label>As-Found Values (comma-separated)</label>
+                        <input type=\"text\" id=\"asFoundValues\" placeholder=\"e.g., 0.1, 25.2, 50.1, 75.3, 100.2\" required>
+                    </div>
+
+                    <div class=\"form-group full-width\">
+                        <label>As-Left Values (comma-separated)</label>
+                        <input type=\"text\" id=\"asLeftValues\" placeholder=\"e.g., 0.0, 25.0, 50.0, 75.0, 100.0\" required>
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"calibrationStatus\">Calibration Status</label>
+                        <select id=\"calibrationStatus\" required>
+                            <option value=\"PASS\">PASS - Within Tolerance</option>
+                            <option value=\"PASS (ADJUSTED)\">PASS (ADJUSTED) - Adjusted to Within Tolerance</option>
+                            <option value=\"FAIL\">FAIL - Out of Tolerance</option>
+                            <option value=\"LIMITED USE\">LIMITED USE - Conditional Acceptance</option>
+                        </select>
+                    </div>
+
+                    <div class=\"form-group full-width\">
+                        <label for=\"remarks\">Remarks/Notes</label>
+                        <textarea id=\"remarks\" placeholder=\"Additional observations, adjustments made, or special conditions...\"></textarea>
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Approval & Signature</h2>
+                
+                <div class=\"form-grid\">
+                    <div class=\"form-group\">
+                        <label for=\"technicianName\">Technician Name</label>
+                        <input type=\"text\" id=\"technicianName\" required placeholder=\"Full Name\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"technicianId\">Technician ID</label>
+                        <input type=\"text\" id=\"technicianId\" placeholder=\"e.g., TECH-001\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"reviewerName\">Reviewer/Supervisor Name</label>
+                        <input type=\"text\" id=\"reviewerName\" placeholder=\"Full Name\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"companyName\">Company/Laboratory Name</label>
+                        <input type=\"text\" id=\"companyName\" required placeholder=\"Your Company Name\">
+                    </div>
+
+                    <div class=\"form-group\">
+                        <label for=\"certificateNumber\">Certificate Number</label>
+                        <input type=\"text\" id=\"certificateNumber\" required placeholder=\"e.g., CAL-2026-001\">
+                    </div>
+                </div>
+
+                <div class=\"btn-group\">
+                    <button type=\"submit\" class=\"btn btn-primary\">Generate Certificate</button>
+                    <button type=\"button\" class=\"btn btn-secondary\" id=\"downloadBtn\" style=\"display: none;\">Download/Print PDF</button>
+                </div>
+            </form>
+        </div>
+
+        <div id=\"certificate\">
+            <!-- Certificate content will be generated here -->
+        </div>
+    </div>
+
+    <script>
+        // Set default dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('calibrationDate').value = today;
+            
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            document.getElementById('nextDueDate').value = nextYear.toISOString().split('T')[0];
+            
+            const lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
+            document.getElementById('standardCalDate').value = lastMonth.toISOString().split('T')[0];
+        });
+
+        // Form submission
+        document.getElementById('calibrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateCertificate();
+        });
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function generateCertificate() {
+            // Get form values
+            const formData = {
+                instrumentCategory: document.getElementById('instrumentCategory').value,
+                brand: document.getElementById('brand').value,
+                model: document.getElementById('model').value,
+                serialNumber: document.getElementById('serialNumber').value,
+                assetTag: document.getElementById('assetTag').value,
+                location: document.getElementById('location').value,
+                calibrationDate: document.getElementById('calibrationDate').value,
+                nextDueDate: document.getElementById('nextDueDate').value,
+                procedure: document.getElementById('procedure').value,
+                environment: document.getElementById('environment').value,
+                standardUsed: document.getElementById('standardUsed').value,
+                standardSerial: document.getElementById('standardSerial').value,
+                standardCalDate: document.getElementById('standardCalDate').value,
+                traceability: document.getElementById('traceability').value,
+                measurementUnit: document.getElementById('measurementUnit').value,
+                range: document.getElementById('range').value,
+                uncertainty: document.getElementById('uncertainty').value,
+                accuracy: document.getElementById('accuracy').value,
+                testPoints: document.getElementById('testPoints').value,
+                asFoundValues: document.getElementById('asFoundValues').value,
+                asLeftValues: document.getElementById('asLeftValues').value,
+                calibrationStatus: document.getElementById('calibrationStatus').value,
+                remarks: document.getElementById('remarks').value,
+                technicianName: document.getElementById('technicianName').value,
+                technicianId: document.getElementById('technicianId').value,
+                reviewerName: document.getElementById('reviewerName').value,
+                companyName: document.getElementById('companyName').value,
+                certificateNumber: document.getElementById('certificateNumber').value
+            };
+
+            // Parse test points and values
+            const testPoints = formData.testPoints.split(',').map(v => v.trim());
+            const asFoundValues = formData.asFoundValues.split(',').map(v => v.trim());
+            const asLeftValues = formData.asLeftValues.split(',').map(v => v.trim());
+
+            // Calculate errors and build results table
+            let resultsTableRows = '';
+            for (let i = 0; i < testPoints.length; i++) {
+                const asFound = parseFloat(asFoundValues[i]) || 0;
+                const asLeft = parseFloat(asLeftValues[i]) || 0;
+                const testPoint = parseFloat(testPoints[i]) || 0;
+                const errorFound = (asFound - testPoint).toFixed(3);
+                const errorLeft = (asLeft - testPoint).toFixed(3);
+
+                resultsTableRows += `
+                    <tr>
+                        <td>${testPoints[i]}</td>
+                        <td>${asFoundValues[i] || 'N/A'}</td>
+                        <td>${errorFound}</td>
+                        <td>${asLeftValues[i] || 'N/A'}</td>
+                        <td>${errorLeft}</td>
+                    </tr>
+                `;
+            }
+
+            // Generate certificate HTML
+            const statusClass = formData.calibrationStatus.includes('PASS') ? 'status-pass' : 'status-fail';
+            
+            const certificateHTML = `
+                <div class=\"cert-header\">
+                    <h1 class=\"cert-title\">${formData.companyName}</h1>
+                    <h2 class=\"cert-main-title\">Calibration Certificate</h2>
+                    <p class=\"cert-subtitle\">This certificate documents the calibration of the instrument described below</p>
+                    <p style=\"margin-top: 15px; font-size: 16px;\"><strong>Certificate No:</strong> ${formData.certificateNumber}</p>
+                </div>
+
+                <div class=\"cert-section\">
+                    <h3 class=\"cert-section-title\">Instrument Under Test</h3>
+                    <table class=\"cert-table\">
+                        <tbody>
+                            <tr>
+                                <td>Instrument Type</td>
+                                <td>${formData.instrumentCategory}</td>
+                            </tr>
+                            <tr>
+                                <td>Manufacturer</td>
+                                <td>${formData.brand}</td>
+                            </tr>
+                            <tr>
+                                <td>Model Number</td>
+                                <td>${formData.model}</td>
+                            </tr>
+                            <tr>
+                                <td>Serial Number</td>
+                                <td>${formData.serialNumber}</td>
+                            </tr>
+                            ${formData.assetTag ? `<tr><td>Asset/Tag Number</td><td>${formData.assetTag}</td></tr>` : ''}
+                            ${formData.location ? `<tr><td>Location</td><td>${formData.location}</td></tr>` : ''}
+                            <tr>
+                                <td>Measurement Range</td>
+                                <td>${formData.range} ${formData.measurementUnit}</td>
+                            </tr>
+                            ${formData.accuracy ? `<tr><td>Accuracy Class</td><td>${formData.accuracy}</td></tr>` : ''}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class=\"cert-section\">
+                    <h3 class=\"cert-section-title\">Calibration Information</h3>
+                    <table class=\"cert-table\">
+                        <tbody>
+                            <tr>
+                                <td>Calibration Date</td>
+                                <td>${formatDate(formData.calibrationDate)}</td>
+                            </tr>
+                            <tr>
+                                <td>Next Calibration Due</td>
+                                <td>${formatDate(formData.nextDueDate)}</td>
+                            </tr>
+                            ${formData.procedure ? `<tr><td>Procedure Number</td><td>${formData.procedure}</td></tr>` : ''}
+                            ${formData.environment ? `<tr><td>Environmental Conditions</td><td>${formData.environment}</td></tr>` : ''}
+                            <tr>
+                                <td>Measurement Uncertainty</td>
+                                <td>${formData.uncertainty} ${formData.measurementUnit} (k=2, 95% confidence)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class=\"cert-section\">
+                    <h3 class=\"cert-section-title\">Reference Standards Used</h3>
+                    <table class=\"cert-table\">
+                        <tbody>
+                            <tr>
+                                <td>Standard Equipment</td>
+                                <td>${formData.standardUsed}</td>
+                            </tr>
+                            <tr>
+                                <td>Serial Number</td>
+                                <td>${formData.standardSerial}</td>
+                            </tr>
+                            <tr>
+                                <td>Last Calibration Date</td>
+                                <td>${formatDate(formData.standardCalDate)}</td>
+                            </tr>
+                            <tr>
+                                <td>Traceability</td>
+                                <td>${formData.traceability}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class=\"cert-section\">
+                    <h3 class=\"cert-section-title\">Calibration Results</h3>
+                    <table class=\"results-table\">
+                        <thead>
+                            <tr>
+                                <th>Nominal Value<br>(${formData.measurementUnit})</th>
+                                <th>As-Found<br>(${formData.measurementUnit})</th>
+                                <th>As-Found Error<br>(${formData.measurementUnit})</th>
+                                <th>As-Left<br>(${formData.measurementUnit})</th>
+                                <th>As-Left Error<br>(${formData.measurementUnit})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${resultsTableRows}
+                        </tbody>
+                    </table>
+                    <p style=\"margin-top: 20px; font-size: 16px;\">
+                        <strong>Calibration Status:</strong> 
+                        <span class=\"${statusClass}\">${formData.calibrationStatus}</span>
+                    </p>
+                </div>
+
+                ${formData.remarks ? `
+                <div class=\"cert-section\">
+                    <h3 class=\"cert-section-title\">Remarks</h3>
+                    <p style=\"padding: 15px; background: #f9fafb; border-radius: 8px; line-height: 1.8;\">${formData.remarks}</p>
+                </div>
+                ` : ''}
+
+                <div class=\"traceability-note\">
+                    <strong>Traceability Statement:</strong> The calibration measurements are traceable to ${formData.traceability} through an unbroken chain of calibrations. This certificate shall not be reproduced except in full without written approval. The reported uncertainty is based on a standard uncertainty multiplied by a coverage factor k=2, providing a level of confidence of approximately 95%.
+                </div>
+
+                <div class=\"signature-block\">
+                    <div class=\"signature-item\">
+                        <div class=\"signature-line\"></div>
+                        <p style=\"font-weight: 700; font-size: 16px; margin-bottom: 5px;\">${formData.technicianName}</p>
+                        <p style=\"color: #6b7280; font-size: 14px;\">Calibration Technician</p>
+                        ${formData.technicianId ? `<p style=\"color: #6b7280; font-size: 14px;\">ID: ${formData.technicianId}</p>` : ''}
+                        <p style=\"color: #6b7280; font-size: 14px;\">Date: ${formatDate(formData.calibrationDate)}</p>
+                    </div>
+                    ${formData.reviewerName ? `
+                    <div class=\"signature-item\">
+                        <div class=\"signature-line\"></div>
+                        <p style=\"font-weight: 700; font-size: 16px; margin-bottom: 5px;\">${formData.reviewerName}</p>
+                        <p style=\"color: #6b7280; font-size: 14px;\">Technical Reviewer</p>
+                        <p style=\"color: #6b7280; font-size: 14px;\">Date: ${formatDate(formData.calibrationDate)}</p>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <p style=\"text-align: center; margin-top: 40px; color: #9ca3af; font-size: 13px;\">
+                    This is an electronically generated certificate. Page 1 of 1
+                </p>
+            `;
+
+            // Display certificate
+            const certificateDiv = document.getElementById('certificate');
+            certificateDiv.innerHTML = certificateHTML;
+            certificateDiv.classList.add('show');
+
+            // Show download button
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+
+            // Scroll to certificate
+            setTimeout(() => {
+                certificateDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        // Download/Print functionality
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            window.print();
+        });
+    </script>
+</body>
+</html>"
+Observation: Overwrite successful: /app/calibration-certificate-generator.html
